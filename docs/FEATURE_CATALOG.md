@@ -52,3 +52,13 @@
 - Progress tracking
 - Multilingual explanations
 - Offline access
+
+
+## Geometry Construction Lab – current implementation
+- Line, line segment, angle, angle bisector, parallel/perpendicular line and perpendicular bisector presets.
+- Triangle and quadrilateral families.
+- Circle, arc, tangent/secant illustrations, circumcircle/incircle illustrations, ellipse, parabola and hyperbola.
+- Regular polygon, pentagon, hexagon, octagon and locus illustration.
+- Engineering drawing presets and virtual instrument overlays.
+- Construction history with play/pause, replay, step navigation and speed settings.
+- See `GEOMETRY_STUDIO.md` for prototype limitations and next engineering work.

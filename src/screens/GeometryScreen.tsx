@@ -1,61 +1,49 @@
-import React, { useMemo, useState } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet } from 'react-native';
-import Svg, { Line, Circle, Path, Text as SvgText } from 'react-native-svg';
-import Panel from '../components/Panel';
+import React, { useMemo, useRef, useState } from 'react';
+import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import Svg, { Circle, Ellipse, Line, Path, Polygon, Rect, Text as SvgText } from 'react-native-svg';
 
-type Mode = 'bisector' | 'circle' | 'triangle';
-export default function GeometryScreen() {
-  const [mode, setMode] = useState<Mode>('bisector');
-  const [showSteps, setShowSteps] = useState(true);
-  const diagram = useMemo(() => {
-    if (mode === 'circle') return 'A circle with centre O and radius OA.';
-    if (mode === 'triangle') return 'An equilateral triangle with equal sides.';
-    return 'The perpendicular bisector of line segment AB.';
-  }, [mode]);
-  return <ScrollView contentContainerStyle={styles.container}>
-    <Text style={styles.heading}>Geometry Studio</Text>
-    <Text style={styles.sub}>Explore classical constructions with a virtual drawing board.</Text>
-    <View style={styles.selector}>
-      {([{ id: 'bisector', label: 'Bisector' }, { id: 'circle', label: 'Circle' }, { id: 'triangle', label: 'Triangle' }] as {id: Mode; label: string}[]).map(x =>
-        <Pressable key={x.id} onPress={() => setMode(x.id)} style={[styles.chip, mode === x.id && styles.chipActive]}><Text style={[styles.chipText, mode === x.id && styles.chipTextActive]}>{x.label}</Text></Pressable>
-      )}
-    </View>
-    <Panel title="Construction board">
-      <View style={styles.canvas}>
-        <Svg viewBox="0 0 340 230" width="100%" height={230}>
-          {mode === 'bisector' && <>
-            <Line x1="55" y1="145" x2="285" y2="145" stroke="#2878E5" strokeWidth="2.5"/>
-            <Path d="M170 28 A117 117 0 0 1 170 262" stroke="#91BDF4" strokeWidth="1.6" fill="none" strokeDasharray="5 4"/>
-            <Path d="M170 28 A117 117 0 0 0 170 262" stroke="#91BDF4" strokeWidth="1.6" fill="none" strokeDasharray="5 4"/>
-            <Line x1="170" y1="35" x2="170" y2="205" stroke="#E28B37" strokeWidth="2.5"/>
-            <Circle cx="55" cy="145" r="4" fill="#1766CC"/><Circle cx="285" cy="145" r="4" fill="#1766CC"/><Circle cx="170" cy="145" r="4" fill="#E28B37"/>
-            <SvgText x="48" y="164" fill="#17375F" fontSize="12">A</SvgText><SvgText x="282" y="164" fill="#17375F" fontSize="12">B</SvgText><SvgText x="178" y="139" fill="#C77827" fontSize="12">M</SvgText>
-            <SvgText x="177" y="48" fill="#C77827" fontSize="11">90°</SvgText>
-          </>}
-          {mode === 'circle' && <>
-            <Circle cx="170" cy="112" r="78" stroke="#2878E5" strokeWidth="2.5" fill="#EAF3FF"/>
-            <Line x1="170" y1="112" x2="248" y2="112" stroke="#E28B37" strokeWidth="2.5"/>
-            <Circle cx="170" cy="112" r="4" fill="#17375F"/><Circle cx="248" cy="112" r="4" fill="#E28B37"/>
-            <SvgText x="157" y="103" fill="#17375F" fontSize="12">O</SvgText><SvgText x="251" y="107" fill="#C77827" fontSize="12">A</SvgText>
-          </>}
-          {mode === 'triangle' && <>
-            <Path d="M170 28 L65 200 L275 200 Z" fill="#EAF3FF" stroke="#2878E5" strokeWidth="2.5"/>
-            <Line x1="170" y1="28" x2="170" y2="200" stroke="#E28B37" strokeWidth="1.5" strokeDasharray="5 4"/>
-            <SvgText x="164" y="19" fill="#17375F" fontSize="12">A</SvgText><SvgText x="51" y="215" fill="#17375F" fontSize="12">B</SvgText><SvgText x="280" y="215" fill="#17375F" fontSize="12">C</SvgText>
-          </>}
-        </Svg>
-      </View>
-      <Text style={styles.caption}>{diagram}</Text>
-      <Pressable style={styles.toggle} onPress={() => setShowSteps(!showSteps)}><Text style={styles.toggleText}>{showSteps ? 'Hide construction steps' : 'Show construction steps'}</Text></Pressable>
-      {showSteps && <View style={styles.steps}>
-        {(mode === 'bisector' ? ['Draw line segment AB.', 'Use equal-radius arcs from A and B.', 'Mark the two arc intersections.', 'Join the intersections to form the perpendicular bisector.'] : mode === 'circle' ? ['Choose a centre O.', 'Set the compass radius OA.', 'Rotate the compass through a full turn.', 'The locus forms a circle.'] : ['Mark three equally spaced vertices.', 'Join A to B, B to C and C to A.', 'All three sides are equal.']).map((s, i) => <Text key={s} style={styles.step}><Text style={styles.stepNum}>{i + 1}. </Text>{s}</Text>)}
-      </View>}
-    </Panel>
-    <Text style={styles.note}>Stage 1 preview: the board demonstrates standard constructions. Later stages will add draggable points, a working compass, ruler, protractor, measurements and export.</Text>
-  </ScrollView>;
+type Item = { id:number; type:string; x1:number; y1:number; x2:number; y2:number; d?:string; points?:string };
+const BLUE='#2563EB';
+const toolGroups = [
+ {name:'Draw freely',items:['Pencil','Line','Line segment','Circle','Arc','Rectangle','Triangle','Angle','Eraser']},
+ {name:'Precise constructions',items:['Angle bisector','Parallel line','Perpendicular line','Perpendicular bisector','Tangent','Secant','Circumcircle','Incircle']},
+ {name:'Curves & polygons',items:['Ellipse','Parabola','Hyperbola','Pentagon','Hexagon','Octagon','Regular polygon','Geometrical locus']},
+ {name:'Engineering drawing',items:['Orthographic view','Isometric axes','Dimension line','Projection lines']},
+];
+const instruments=['Compass','Ruler','Protractor','Set square','Measure'];
+export default function GeometryScreen(){
+ const {width}=useWindowDimensions(); const [active,setActive]=useState('Pencil'); const [items,setItems]=useState<Item[]>([]); const [draft,setDraft]=useState<Item|null>(null); const [instrument,setInstrument]=useState(''); const [speed,setSpeed]=useState(1); const [playing,setPlaying]=useState(false); const [visible,setVisible]=useState(0); const [showGrid,setShowGrid]=useState(true); const [boardW,setBoardW]=useState(600); const [boardH,setBoardH]=useState(390); const start=useRef({x:0,y:0}); const points=useRef<string[]>([]); const isFree=active==='Pencil'||active==='Geometrical locus';
+ const point=(e:any)=>({x:Math.max(0,Math.min(600,e.nativeEvent.locationX*600/boardW)),y:Math.max(0,Math.min(390,e.nativeEvent.locationY*390/boardH))});
+ const begin=(e:any)=>{const p=point(e);start.current=p;points.current=[`${p.x},${p.y}`];setDraft({id:Date.now(),type:active,x1:p.x,y1:p.y,x2:p.x,y2:p.y,d:`M ${p.x} ${p.y}`});};
+ const move=(e:any)=>{if(!draft)return;const p=point(e);if(isFree){points.current.push(`${p.x},${p.y}`);setDraft({...draft,x2:p.x,y2:p.y,d:`M ${points.current.join(' L ')}`});}else setDraft({...draft,x2:p.x,y2:p.y,d:undefined});};
+ const finish=(e:any)=>{if(!draft)return;const p=point(e);let next={...draft,x2:p.x,y2:p.y};if(isFree)next.d=`M ${points.current.join(' L ')} L ${p.x} ${p.y}`;if(active==='Eraser'){setItems(old=>old.slice(0,-1));setDraft(null);return;}setItems(old=>[...old,next]);setVisible(v=>v+1);setDraft(null);};
+ const addPreset=(name:string)=>{setActive(name);const x=150,y=95;let next:Item={id:Date.now(),type:name,x1:x,y1:y,x2:450,y2:295};setItems(old=>[...old,next]);setVisible(v=>v+1);};
+ const renderItem=(it:Item,key:any)=>{const x=Math.min(it.x1,it.x2),y=Math.min(it.y1,it.y2),w=Math.abs(it.x2-it.x1),h=Math.abs(it.y2-it.y1),cx=(it.x1+it.x2)/2,cy=(it.y1+it.y2)/2,r=Math.max(2,Math.hypot(it.x2-it.x1,it.y2-it.y1));const common:any={key,stroke:it.type==='Eraser'?'#fff':BLUE,strokeWidth:2.5,fill:'none',strokeLinecap:'round',strokeLinejoin:'round'};
+  if(it.type==='Pencil'||it.type==='Geometrical locus')return <Path {...common} d={it.d||''}/>;
+  if(it.type==='Line'||it.type==='Line segment'||it.type==='Parallel line'||it.type==='Perpendicular line'||it.type==='Perpendicular bisector'||it.type==='Angle bisector'||it.type==='Tangent'||it.type==='Secant'||it.type==='Ruler'||it.type==='Dimension line')return <Line {...common} x1={it.x1} y1={it.y1} x2={it.x2} y2={it.y2}/>;
+  if(it.type==='Circle'||it.type==='Compass'||it.type==='Incircle'||it.type==='Circumcircle')return <Circle {...common} cx={it.x1} cy={it.y1} r={r}/>;
+  if(it.type==='Ellipse')return <Ellipse {...common} cx={cx} cy={cy} rx={Math.max(2,w/2)} ry={Math.max(2,h/2)}/>;
+  if(it.type==='Rectangle')return <Rect {...common} x={x} y={y} width={w} height={h}/>;
+  if(it.type==='Triangle')return <Polygon {...common} points={`${it.x1},${it.y2} ${cx},${it.y1} ${it.x2},${it.y2}`}/>;
+  if(it.type==='Arc')return <Path {...common} d={`M ${it.x1} ${it.y2} A ${r} ${r} 0 0 1 ${it.x2} ${it.y2}`}/>;
+  if(it.type==='Pentagon'||it.type==='Hexagon'||it.type==='Octagon'||it.type==='Regular polygon'){const n=it.type==='Pentagon'?5:it.type==='Hexagon'?6:it.type==='Octagon'?8:7;const pts=Array.from({length:n},(_,i)=>`${cx+r*.5*Math.cos(-Math.PI/2+i*2*Math.PI/n)},${cy+r*.5*Math.sin(-Math.PI/2+i*2*Math.PI/n)}`).join(' ');return <Polygon {...common} points={pts}/>;}
+  if(it.type==='Parabola')return <Path {...common} d={`M ${x} ${it.y2} Q ${cx} ${y-120} ${it.x2} ${it.y2}`}/>;
+  if(it.type==='Hyperbola')return <Path {...common} d={`M ${cx} ${cy} Q ${cx+40} ${cy-90} ${it.x2} ${y} M ${cx} ${cy} Q ${cx-40} ${cy-90} ${x} ${y}`}/>;
+  if(it.type==='Angle')return <Path {...common} d={`M ${it.x1} ${it.y1} L ${it.x2} ${it.y1} L ${it.x2} ${it.y2}`}/>;
+  if(it.type==='Orthographic view'||it.type==='Projection lines'||it.type==='Isometric axes')return <Path {...common} d={`M ${x} ${y} L ${it.x2} ${it.y2} M ${x} ${it.y2} L ${it.x2} ${y} M ${cx} ${y} L ${cx} ${it.y2}`}/>;
+  return <Line {...common} x1={it.x1} y1={it.y1} x2={it.x2} y2={it.y2}/>;
+ };
+ const shown=items.slice(0,visible);
+ return <ScrollView style={s.page} contentContainerStyle={s.container}>
+  <View style={s.hero}><Text style={s.eyebrow}>MATHVERSE AI · INTERACTIVE DRAFTING</Text><Text style={s.title}>Geometry Drawing Board</Text><Text style={s.sub}>Choose a tool, then touch and drag on the board to draw your own construction.</Text></View>
+  {toolGroups.map(g=><View key={g.name} style={s.group}><Text style={s.groupTitle}>{g.name}</Text><View style={s.chips}>{g.items.map(t=><Pressable key={t} onPress={()=>setActive(t)} style={[s.chip,active===t&&s.chipOn]}><Text style={[s.chipText,active===t&&s.chipTextOn]}>{t}</Text></Pressable>)}</View></View>)}
+  <View style={s.toolbar}><Text style={s.heading}>Canvas · {active}</Text><View style={s.row}><Pressable style={s.btn} onPress={()=>{setItems(a=>a.slice(0,-1));setVisible(v=>Math.max(0,v-1));}}><Text style={s.btnText}>Undo</Text></Pressable><Pressable style={s.btn} onPress={()=>{setItems([]);setVisible(0);setDraft(null);}}><Text style={s.btnText}>Clear</Text></Pressable><Pressable style={s.btnPrimary} onPress={()=>setShowGrid(v=>!v)}><Text style={s.btnWhite}>{showGrid?'Hide grid':'Show grid'}</Text></Pressable></View></View>
+  <View style={s.board} onLayout={e=>{setBoardW(e.nativeEvent.layout.width);setBoardH(e.nativeEvent.layout.height);}} onStartShouldSetResponder={()=>true} onMoveShouldSetResponder={()=>true} onResponderGrant={begin} onResponderMove={move} onResponderRelease={finish}>
+   <Svg width="100%" height="100%" viewBox="0 0 600 390">{showGrid&&<>{Array.from({length:31},(_,i)=><Line key={'v'+i} x1={i*20} y1="0" x2={i*20} y2="390" stroke="#EAF0F8" strokeWidth="1"/>)}{Array.from({length:20},(_,i)=><Line key={'h'+i} x1="0" y1={i*20} x2="600" y2={i*20} stroke="#EAF0F8" strokeWidth="1"/>)}</>}{shown.map((it,i)=>renderItem(it,i))}{draft&&renderItem(draft,'draft')}<SvgText x="12" y="375" fontSize="10" fill="#91A1B7">TOUCH + DRAG TO DRAW · {items.length} OBJECTS</SvgText></Svg>
+  </View><Text style={s.hint}>On a phone or tablet, drag your finger. On a computer, click and drag with your mouse.</Text>
+  <View style={s.group}><Text style={s.groupTitle}>Virtual instruments</Text><View style={s.chips}>{instruments.map(t=><Pressable key={t} onPress={()=>setInstrument(instrument===t?'':t)} style={[s.chip,instrument===t&&s.chipOn]}><Text style={[s.chipText,instrument===t&&s.chipTextOn]}>{t}</Text></Pressable>)}</View><Text style={s.hint}>{instrument?`${instrument} selected. Instrument overlay is a visual aid; calibrated snapping is a future precision upgrade.`:'Select an instrument to keep it active while drawing.'}</Text></View>
+  <View style={s.group}><Text style={s.groupTitle}>Construction playback</Text><View style={s.row}><Pressable style={s.btn} onPress={()=>setVisible(0)}><Text style={s.btnText}>Reset</Text></Pressable><Pressable style={s.btn} onPress={()=>setVisible(v=>Math.max(0,v-1))}><Text style={s.btnText}>Previous</Text></Pressable><Pressable style={s.btnPrimary} onPress={()=>setVisible(v=>Math.min(items.length,v+1))}><Text style={s.btnWhite}>Next step</Text></Pressable><Text style={s.hint}>Step {visible}/{items.length}</Text></View><View style={s.chips}>{[0.5,1,2].map(v=><Pressable key={v} onPress={()=>setSpeed(v)} style={[s.chip,speed===v&&s.chipOn]}><Text style={s.chipText}>{v}× speed</Text></Pressable>)}</View></View>
+  <Text style={s.hint}>This version supports freehand pencil strokes and drag-to-create basic shapes. Exact compass-radius locking, angle-degree calibration, snapping, and mathematically constrained bisectors are planned for the next precision-engine stage.</Text>
+ </ScrollView>;
 }
-const styles = StyleSheet.create({
-  container: { padding: 18, paddingBottom: 30 }, heading: { color: '#17375F', fontSize: 23, fontWeight: '900' }, sub: { color: '#71839C', fontSize: 12, marginTop: 5, marginBottom: 16, lineHeight: 18 },
-  selector: { flexDirection: 'row', gap: 8, marginBottom: 14 }, chip: { borderRadius: 20, paddingVertical: 9, paddingHorizontal: 14, backgroundColor: '#E7EFFA' }, chipActive: { backgroundColor: '#1766CC' }, chipText: { color: '#536B89', fontWeight: '700', fontSize: 11 }, chipTextActive: { color: '#FFFFFF' },
-  canvas: { backgroundColor: '#F7FAFF', borderRadius: 13, borderWidth: 1, borderColor: '#E2ECFA', overflow: 'hidden' }, caption: { color: '#647A97', fontSize: 11, marginTop: 10 }, toggle: { alignSelf: 'flex-start', marginTop: 13, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 9, backgroundColor: '#EAF3FF' }, toggleText: { color: '#1766CC', fontWeight: '800', fontSize: 11 }, steps: { marginTop: 10, gap: 8 }, step: { color: '#536B89', fontSize: 12, lineHeight: 18 }, stepNum: { color: '#1766CC', fontWeight: '900' }, note: { color: '#8A9AB0', fontSize: 10, lineHeight: 16, marginTop: 2 }
-});
+const s=StyleSheet.create({page:{flex:1,backgroundColor:'#F4F8FF'},container:{padding:15,paddingBottom:35,gap:12},hero:{backgroundColor:'#102F5D',padding:18,borderRadius:18},eyebrow:{color:'#93C5FD',fontSize:9,fontWeight:'900',letterSpacing:1},title:{color:'#fff',fontSize:23,fontWeight:'900',marginTop:7},sub:{color:'#D3E3F8',fontSize:12,lineHeight:18,marginTop:6},group:{backgroundColor:'#fff',padding:13,borderRadius:14,borderColor:'#E0EAF7',borderWidth:1,gap:10},groupTitle:{color:'#23466F',fontSize:13,fontWeight:'900'},chips:{flexDirection:'row',flexWrap:'wrap',gap:7},chip:{paddingHorizontal:11,paddingVertical:9,borderRadius:10,backgroundColor:'#F1F5FB',borderWidth:1,borderColor:'#E2EAF5'},chipOn:{backgroundColor:'#E2EEFF',borderColor:'#6FA7F5'},chipText:{fontSize:11,color:'#506782',fontWeight:'700'},chipTextOn:{color:'#1459B8'},toolbar:{gap:9},heading:{fontSize:17,fontWeight:'900',color:'#16345B'},row:{flexDirection:'row',flexWrap:'wrap',gap:7,alignItems:'center'},btn:{backgroundColor:'#E8F0FB',paddingHorizontal:13,paddingVertical:9,borderRadius:9},btnText:{fontSize:11,color:'#315477',fontWeight:'800'},btnPrimary:{backgroundColor:BLUE,paddingHorizontal:13,paddingVertical:9,borderRadius:9},btnWhite:{fontSize:11,color:'#fff',fontWeight:'800'},board:{height:390,backgroundColor:'#fff',borderWidth:1,borderColor:'#D6E3F3',borderRadius:13,overflow:'hidden'},hint:{fontSize:10,color:'#71839C',lineHeight:16},});

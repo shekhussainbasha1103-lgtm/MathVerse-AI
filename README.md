@@ -108,3 +108,7 @@ See `backend/README.md` (or `docs/ANDROID_AND_WEB.md`) for local backend setup.
 10. Launch and Publishing
 
 We will add these capabilities in tested, incremental ZIP updates. Do not publish API keys or passwords in this repository.
+
+
+## Geometry Construction Lab (upgraded)
+The Geometry tab now includes a construction catalogue, vector drawing board, geometry presets, virtual instrument overlays, and step playback with replay and speed controls. See `docs/GEOMETRY_STUDIO.md` for the included tools and current-stage limitations.

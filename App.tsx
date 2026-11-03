@@ -5,6 +5,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import GeometryScreen from './src/screens/GeometryScreen';
 import CalculatorScreen from './src/screens/CalculatorScreen';
 import GraphScreen from './src/screens/GraphScreen';
+import InstallPwaButton from './src/components/InstallPwaButton';
 
 type Tab = 'Home' | 'Geometry' | 'Calculator' | 'Graphs';
 
@@ -24,7 +25,7 @@ export default function App() {
           <Text style={styles.brand}>MathVerse <Text style={styles.ai}>AI</Text></Text>
           <Text style={styles.subtitle}>One platform. All Mathematics.</Text>
         </View>
-        <View style={styles.avatar}><Text style={styles.avatarText}>M</Text></View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><InstallPwaButton /><View style={styles.avatar}><Text style={styles.avatarText}>M</Text></View></View>
       </View>
       <View style={styles.content}>{screens[tab]}</View>
       <View style={styles.nav}>

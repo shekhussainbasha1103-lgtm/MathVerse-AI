@@ -2,7 +2,7 @@
   "name": "mathverse-ai",
   "version": "0.1.0",
   "private": true,
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "web": "expo start --web",
@@ -21,7 +21,10 @@
     "mathjs": "^14.8.1",
     "react-dom": "19.1.0",
     "react-native-web": "^0.21.0",
-    "@expo/metro-runtime": "~6.1.2"
+    "@expo/metro-runtime": "~6.1.2",
+    "expo-router": "~6.0.14",
+    "expo-linking": "~8.0.8",
+    "expo-constants": "~18.0.10"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",

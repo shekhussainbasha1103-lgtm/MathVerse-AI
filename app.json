@@ -23,6 +23,12 @@
       "themeColor": "#1766CC",
       "backgroundColor": "#F4F8FF",
       "description": "An interactive mathematics workspace with geometry, calculator and graphing tools."
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": false
     }
   }
 }

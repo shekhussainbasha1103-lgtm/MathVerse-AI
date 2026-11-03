@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "MathVerse AI",
+    "slug": "mathverse-ai",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F4F8FF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mathverseai.app"
+    },
+    "android": {
+      "package": "com.mathverseai.app"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

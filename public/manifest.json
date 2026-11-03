@@ -1,0 +1,10 @@
+{
+  "name": "MathVerse AI",
+  "short_name": "MathVerse",
+  "description": "Explore mathematics with visual learning tools.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F8FF",
+  "theme_color": "#1766CC",
+  "orientation": "any"
+}

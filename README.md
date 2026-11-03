@@ -1,131 +1,83 @@
 # MathVerse AI — Android + Website starter
 
-This single Expo + React Native + TypeScript project targets **Android and Web** from one codebase.
+This project is prepared for **Android development and website deployment** from one Expo + React Native + TypeScript codebase.
 
-## What is included now (Stage 1)
+## What is included
 
-- Premium blue-and-white dashboard
-- Geometry demonstration screen
+- MathVerse AI dashboard
+- Geometry demonstration board (perpendicular bisector, circle and equilateral triangle)
 - Scientific calculator
-- Basic 2D graph plotter
-- Optional FastAPI + SymPy backend starter
-- Roadmap and architecture documentation
+- 2D function graphing screen
+- Optional Python FastAPI + SymPy backend starter
+- Expo web static-export configuration
+- Vercel deployment configuration (`vercel.json`)
+- Basic web-app manifest
+- Beginner-friendly instructions
 
-**Important:** This ZIP is the Stage 1 starter foundation for Android and the website. It is not the complete final product, does not contain all ten planned stages, and is not yet a published Android app or deployed website. We will implement and test the remaining features stage by stage.
+**Please note:** This is the current starter version, not the finished ten-stage product. The AI tutor, full interactive geometry tools, 3D engine, user accounts, cloud sync and production services still need to be built and tested in later updates. No APK is included in this ZIP.
 
-## Requirements
+---
 
-- Windows 10/11
-- Node.js LTS (npm included)
-- Android phone with Expo Go, or Android Studio emulator
-- Python 3.10+ only if you want to run the optional backend
+# Easiest way to publish the website with Vercel
 
-## Run the website locally
+You do not need to write code for this part.
 
-Open PowerShell in this `MathVerseAI` folder:
+1. Extract this ZIP on your computer.
+2. Open your GitHub repository: `https://github.com/shekhussainbasha1103-lgtm/MathVerse-AI`
+3. Upload the **contents inside the `MathVerseAI` folder** to the repository (not the outer folder itself if it creates an unwanted nested folder).
+4. Commit the changes.
+5. Open https://vercel.com/ and sign in using GitHub.
+6. Choose **Add New → Project**.
+7. Import `shekhussainbasha1103-lgtm/MathVerse-AI`.
+8. Check these settings:
+   - Framework Preset: Other
+   - Build Command: `npm run web:export`
+   - Output Directory: `dist`
+   - Install Command: `npm install`
+9. Click **Deploy**.
+10. When deployment finishes, Vercel gives you a website address. Open it to use MathVerse AI.
 
-```powershell
-npm install
-npm run web
-```
+The included `vercel.json` already contains the build and output settings, so Vercel may fill them automatically.
 
-Expo will show a local URL. Open it in your browser.
+## Updating the website later
 
-## Run on an Android phone
+Whenever you upload a new version of the project to the same GitHub repository and commit the changes, Vercel can automatically build and deploy the updated website.
 
-1. Install **Expo Go** from Google Play on your Android phone.
-2. Connect your phone and computer to the same Wi-Fi.
-3. In PowerShell, run:
+---
 
-```powershell
+# Android: try the app on your phone
+
+This source project can run on Android using Expo Go.
+
+1. Install Expo Go from Google Play.
+2. On your Windows computer, install Node.js LTS from https://nodejs.org/.
+3. Download this repository to your computer (GitHub Desktop is an easy option: https://desktop.github.com/).
+4. Open the project folder in VS Code.
+5. Open Terminal → New Terminal.
+6. Run:
+
+```bash
 npm install
 npx expo start
 ```
 
-4. Scan the QR code using Expo Go.
+7. Scan the QR code with Expo Go. Your phone and computer should normally be on the same Wi-Fi. If needed, run `npx expo start --tunnel`.
 
-If the connection does not work, try:
+## Building an Android APK later
 
-```powershell
-npx expo start --tunnel
-```
+A standalone installable APK requires an Expo Application Services cloud build and an Expo account. Follow the guide in `docs/ANDROID_AND_WEB.md`; this ZIP does not contain a prebuilt APK.
 
-## Run using an Android emulator
+---
 
-Install Android Studio and create/start an Android Virtual Device. Then run:
+# Optional Python mathematics backend
 
-```powershell
-npm install
-npm run android
-```
+The current frontend starter works independently for its included local tools. The Python backend is optional and is not automatically deployed by the Vercel frontend configuration.
 
-## Build an installable Android APK (preview)
+See `backend/README.md` (or `docs/ANDROID_AND_WEB.md`) for local backend setup.
 
-For a distributable APK, use Expo Application Services (EAS). You need an Expo account and internet access.
+# Project roadmap
 
-```powershell
-npm install
-npx eas-cli login
-npx eas-cli build:configure
-```
-
-Create an `eas.json` file in the project root with:
-
-```json
-{
-  "build": {
-    "preview": {
-      "android": {
-        "buildType": "apk"
-      }
-    },
-    "production": {
-      "android": {
-        "buildType": "app-bundle"
-      }
-    }
-  }
-}
-```
-
-Then build the preview APK:
-
-```powershell
-npx eas-cli build --platform android --profile preview
-```
-
-EAS will provide a build link when the cloud build completes. This ZIP itself does not contain a ready-made APK.
-
-## Prepare a website build
-
-```powershell
-npm install
-npm run web:export
-```
-
-The exported website files are created in the `dist` folder. You can later deploy that folder to a hosting provider such as GitHub Pages, Netlify or Vercel. Hosting setup and production configuration are not included yet.
-
-## Optional mathematics backend
-
-Open a second PowerShell window:
-
-```powershell
-cd backend
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
-
-Test `http://127.0.0.1:8000/health`.
-
-## Upload to GitHub
-
-Create a repository named `MathVerse-AI`. Extract this ZIP, open the extracted project folder, then upload the **contents** of the `MathVerseAI` folder to the repository. Do not upload only the ZIP if you want GitHub to display the source files.
-
-## Planned development stages
-
-1. Foundation (included in this ZIP)
+1. Foundation — included
 2. Interactive Geometry Studio
 3. Mathematics Engine
 4. Advanced Graphing
@@ -136,6 +88,4 @@ Create a repository named `MathVerse-AI`. Extract this ZIP, open the extracted p
 9. Testing and Security
 10. Launch and Publishing
 
-## Security and production notes
-
-Before public release, add proper authentication, backend authorization, rate limits, input validation, monitoring, HTTPS, privacy controls, automated tests and production deployment configuration. Keep all private API keys on the server, never in the mobile/web client.
+We will add these capabilities in tested, incremental ZIP updates. Do not publish API keys or passwords in this repository.
